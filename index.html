@@ -1,50 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 
 <head>
-    <title>ONNX Runtime JavaScript examples: Quick Start - Web (using script tag)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="中興大學 AI 租屋推薦系統，輸入需求即可獲得最適合的租屋選項。">
+    <title>興大 AI 租屋推薦</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <!-- see also advanced usage of importing ONNX Runtime Web: -->
-    <!-- https://github.com/microsoft/onnxruntime-inference-examples/tree/main/js/importing_onnxruntime-web -->
+    <div class="app-container">
+        <!-- 頂部導航列 -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <h1 class="logo"><i class="fa-solid fa-house-chimney"></i> 興大 AI 租屋推薦</h1>
+            </div>
+        </nav>
 
-    <!-- import ONNXRuntime Web from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-    <script>
-        // use an async context to call onnxruntime functions.
-        async function main() {
-            try {
-                // create a new session and load the specific model.
-                //
-                // the model in this example contains a single MatMul node
-                // it has 2 inputs: 'a'(float32, 3x4) and 'b'(float32, 4x3)
-                // it has 1 output: 'c'(float32, 3x3)
-                const session = await ort.InferenceSession.create('./model.onnx');
+        <!-- 主要結果顯示區 (可獨立滾動) -->
+        <main class="main-content" id="mainContent">
 
-                // prepare inputs. a tensor need its corresponding TypedArray as data
-                const dataA = Float32Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-                const dataB = Float32Array.from([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]);
-                const tensorA = new ort.Tensor('float32', dataA, [3, 4]);
-                const tensorB = new ort.Tensor('float32', dataB, [4, 3]);
+            <!-- 初始歡迎畫面 (無關鍵字時顯示) -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <h2>告訴 AI 你的找房需求</h2>
+                <p>簡單輸入幾個條件，AI 將即時為你配對中興最佳租屋</p>
 
-                // prepare feeds. use model input names as keys.
-                const feeds = { a: tensorA, b: tensorB };
+                <div class="suggestion-chips">
+                    <span class="chip">預算 6000 以下</span>
+                    <span class="chip">近中興正門</span>
+                    <span class="chip">獨洗獨曬套房</span>
+                    <span class="chip">安靜、可養寵物</span>
+                </div>
+            </div>
 
-                // feed inputs and run
-                const results = await session.run(feeds);
+            <!-- AI 推薦結果區 (初始隱藏) -->
+            <div class="results-screen" id="resultsScreen" style="display: none;">
 
-                // read from results
-                const dataC = results.c.data;
-                document.write(`data of result tensor 'c': ${dataC}`);
+                <!-- 狀態提示 -->
+                <div class="status-header" id="processingStatus" style="display: none;">
+                    <div class="spinner-small"></div>
+                    <span>AI 正在即時分析您的需求...</span>
+                </div>
 
-            } catch (e) {
-                document.write(`failed to inference ONNX model: ${e}.`);
-            }
-        }
+                <!-- 房屋卡片列表 -->
+                <div class="property-grid" id="recommendationList">
+                    <!-- 第一名推薦 -->
+                    <div class="property-card top-match">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80"
+                                alt="房間照片">
+                            <span class="badge premium">配對度 98%</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-price">NT$ 5,800<span> /月</span></div>
+                            <h4 class="card-title">學府路陽光獨立套房</h4>
 
-        main();
-    </script>
+                            <!-- AI 推薦理由已移除 -->
+
+                            <div class="card-details">
+                                <span><i class="fa-solid fa-vector-square"></i> 6坪</span>
+                                <span><i class="fa-solid fa-building"></i> 3F</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第二名推薦 -->
+                    <div class="property-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1502672260266-1c1de2d9d00c?auto=format&fit=crop&w=600&q=80"
+                                alt="房間照片">
+                            <span class="badge">配對度 92%</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-price">NT$ 5,500<span> /月</span></div>
+                            <h4 class="card-title">南門路安靜大雅房</h4>
+
+                            <!-- AI 推薦理由已移除 -->
+
+                            <div class="card-details">
+                                <span><i class="fa-solid fa-vector-square"></i> 5坪</span>
+                                <span><i class="fa-solid fa-building"></i> 2F</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第三名推薦 -->
+                    <div class="property-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=600&q=80"
+                                alt="房間照片">
+                            <span class="badge">配對度 85%</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-price">NT$ 6,500<span> /月</span></div>
+                            <h4 class="card-title">國光路電梯採光套房</h4>
+
+                            <!-- AI 推薦理由已移除 -->
+
+                            <div class="card-details">
+                                <span><i class="fa-solid fa-vector-square"></i> 7坪</span>
+                                <span><i class="fa-solid fa-building"></i> 5F (有電梯)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部固定輸入區 -->
+        <footer class="input-footer">
+            <div class="input-container">
+                <div class="ai-prompt-box">
+                    <textarea id="userRequirement" placeholder="輸入租屋需求，例如：安靜、預算 6000 以內..."></textarea>
+                    <button class="btn-send" id="btnAnalyze" aria-label="傳送"><i
+                            class="fa-solid fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 客製化 JavaScript -->
+    <script src="app.js"></script>
 </body>
 
 </html>
